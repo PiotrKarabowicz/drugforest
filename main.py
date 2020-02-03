@@ -188,6 +188,26 @@ def my_form_post():
 
     df_abstract_1 = df_abstract_1[['abstracts', 'class']]
     #result3 = str(result2)
+    embedding_clusters = []
+    word_clusters = []
+
+    embeddings = []
+    words = []
+    for similar_word, _ in model_ted1.wv.most_similar(positive = [tablica_in], topn=30):
+        words.append(similar_word)
+        embeddings.append(model_ted1[similar_word])
+        embedding_clusters.append(embeddings)
+        word_clusters.append(words)
+
+    from sklearn.manifold import TSNE
+    import numpy as np
+
+    embedding_clusters = np.array(embedding_clusters)
+    n, m, k = embedding_clusters.shape
+    tsne_model_en_2d = TSNE(perplexity=15, n_components=2, init='pca', n_iter=3500, random_state=32)
+    embeddings_en_2d = np.array(tsne_model_en_2d.fit_transform(embedding_clusters.reshape(n * m, k))).reshape(n, m, 2)
+
+
     import matplotlib.pyplot as plt
 
     import matplotlib.cm as cm
@@ -195,7 +215,7 @@ def my_form_post():
     title = "Most similar for you request"
     labels = keys
     a=0.7
-    filename = 'C:\\Users\\UMB\\Desktop\\flaskapp\\static\\output.png'
+    filename = 'C:\\Users\\UMB\\Desktop\\flaskapp\\static\\output1.png'
 
     plt.figure(figsize=(16, 9))
     colors = cm.rainbow(np.linspace(0, 1, len(labels)))
