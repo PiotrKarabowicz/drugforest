@@ -22,7 +22,7 @@ def page1():
 def my_form_post():
     from pymed import PubMed
     text = request.form['text']
-    max = 1000
+    max =2000
     #count_vect.fit(text)
     text = [text]
     pubmed = PubMed(tool="MyTool", email="p.karabowicz@gmail.com")
@@ -38,7 +38,7 @@ def my_form_post():
 
     df_abstract_1 = df_abstract.dropna()
     import pickle
-    rnd = pickle.load(open('C:\\Users\\UMB\\Desktop\\flaskapp\\static\\finalized_model_32.sav', 'rb'))
+    rnd = pickle.load(open('/home/piotr/projekt2/drugforest/static/finalized_model.sav', 'rb'))
     from sklearn.feature_extraction.text import CountVectorizer
     count_vect = CountVectorizer(analyzer='word', token_pattern=r'\w{1,}', max_features=100)
     result1=count_vect.fit_transform(df_abstract_1['abstracts_lower'])
@@ -56,26 +56,6 @@ def my_form_post():
     df_abstract_1['abstracts_stop'] = df_abstract_1['abstracts_lower'].apply(lambda x: ' '.join([word for word in x.split() if word not in (stop)]))
     df_abstract_1['tokenized'] = df_abstract_1.apply(lambda row: nltk.word_tokenize(row['abstracts_lower']), axis=1)
     model_ted1 = Word2Vec(sentences=df_abstract_1['tokenized'], size=200, window=10, min_count=1, workers=4, sg=0)
-
-    embedding_clusters = []
-    word_clusters = []
-
-    embeddings = []
-    words = []
-    for similar_word, _ in model_ted1.wv.most_similar(positive = ['protein', 'target'], topn=30):
-        words.append(similar_word)
-        embeddings.append(model_ted1[similar_word])
-        embedding_clusters.append(embeddings)
-        word_clusters.append(words)
-
-    from sklearn.manifold import TSNE
-    import numpy as np
-
-    embedding_clusters = np.array(embedding_clusters)
-    n, m, k = embedding_clusters.shape
-    tsne_model_en_2d = TSNE(perplexity=15, n_components=2, init='pca', n_iter=3500, random_state=32)
-    embeddings_en_2d = np.array(tsne_model_en_2d.fit_transform(embedding_clusters.reshape(n * m, k))).reshape(n, m, 2)
-
 
     #plt.show()
 
@@ -106,7 +86,7 @@ def my_form_post():
         for item in sublist:
             flat_list.append(item)
 
-    file = open('C:\\Users\\UMB\\Desktop\\flaskapp\\static\\lista_bialek_bez1.txt', "r")
+    file = open('/home/piotr/projekt2/drugforest/static/lista_bialek_bez1.txt', "r")
     wprowadzony_tekst = file.read()
 
     wt = wprowadzony_tekst.split(',')
@@ -155,7 +135,7 @@ def my_form_post():
     from sklearn.datasets import make_classification
 
     import pickle
-    rnd = pickle.load(open('C:\\Users\\UMB\\Desktop\\flaskapp\\static\\finalized_model_32.sav', 'rb'))
+    rnd = pickle.load(open('/home/piotr/projekt2/drugforest/static/finalized_model.sav', 'rb'))
 
     a = query(tablica_in)
     d = []
@@ -188,12 +168,13 @@ def my_form_post():
 
     df_abstract_1 = df_abstract_1[['abstracts', 'class']]
     #result3 = str(result2)
+
+    #plot
     embedding_clusters = []
     word_clusters = []
-
     embeddings = []
     words = []
-    for similar_word, _ in model_ted1.wv.most_similar(positive = [tablica_in], topn=30):
+    for similar_word, _ in model_ted1.wv.most_similar(positive = [tablica_in[0], 'binding'], topn=30):
         words.append(similar_word)
         embeddings.append(model_ted1[similar_word])
         embedding_clusters.append(embeddings)
@@ -215,7 +196,7 @@ def my_form_post():
     title = "Most similar for you request"
     labels = keys
     a=0.7
-    filename = 'C:\\Users\\UMB\\Desktop\\flaskapp\\static\\output1.png'
+    filename = '/home/piotr/projekt2/drugforest/static/output1.png'
 
     plt.figure(figsize=(16, 9))
     colors = cm.rainbow(np.linspace(0, 1, len(labels)))
