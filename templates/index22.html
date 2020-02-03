@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title>Results {{ text}}</title>
+  </head>
+  <body>
+    <h2> Report</h2>
+	<hr>
+  <br>
+	<p> Results for request: {{ text}}</p>
+  <hr>
+  <h3> Abstracts </h3>
+  <p> AIPharm engine extracted {{len_df}} abstracts</p><br>
+  <P> that can be connected with drug target </p>
+    {% for table in lista_abstract %}
+            {{titles[loop.index]}}
+            {{ table|safe }}
+    {% endfor %}
+
+  <hr>
+  <h3> Clasters for "target", "protein"</h3>
+  <img src="{{url_for('static', filename='output.png')}}" />
+  <hr>
+  <h3> List of extracted proteins </h3>
+  {% for table in tablica_in %}
+          <br>
+          {{titles[loop.index]}}
+          {{ table|safe }}
+  {% endfor %}
+  <hr>
+  <h3> percent true </h3>
+  {% for table in df_list %}
+          {{titles1[loop.index]}}
+          {{ table|safe }}
+  {% endfor %}
+  <!--<h3>What can AIPharm say about proteins</h3> -->
+</body></html>

@@ -1,0 +1,8 @@
+Flask
+pandas
+pymed
+sklearn
+nltk
+gensim
+numpy
+gunicorn
