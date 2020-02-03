@@ -38,7 +38,7 @@ def my_form_post():
 
     df_abstract_1 = df_abstract.dropna()
     import pickle
-    rnd = pickle.load(open('/home/piotr/Pobrane/flaskapp/static/finalized_model.sav', 'rb'))
+    rnd = pickle.load(open('C:\\Users\\UMB\\Desktop\\flaskapp\\static\\finalized_model_32.sav', 'rb'))
     from sklearn.feature_extraction.text import CountVectorizer
     count_vect = CountVectorizer(analyzer='word', token_pattern=r'\w{1,}', max_features=100)
     result1=count_vect.fit_transform(df_abstract_1['abstracts_lower'])
@@ -76,29 +76,7 @@ def my_form_post():
     tsne_model_en_2d = TSNE(perplexity=15, n_components=2, init='pca', n_iter=3500, random_state=32)
     embeddings_en_2d = np.array(tsne_model_en_2d.fit_transform(embedding_clusters.reshape(n * m, k))).reshape(n, m, 2)
 
-    import matplotlib.pyplot as plt
 
-    import matplotlib.cm as cm
-    keys = ['protein', 'target']
-    title = "Most similar for you request"
-    labels = keys
-    a=0.7
-    filename = '/home/piotr/Pobrane/flaskapp/static/output.png'
-
-    plt.figure(figsize=(16, 9))
-    colors = cm.rainbow(np.linspace(0, 1, len(labels)))
-    for label, embeddings, words, color in zip(labels, embedding_clusters, word_clusters, colors):
-        x = embeddings[:, 0]
-        y = embeddings[:, 1]
-        plt.scatter(x, y, c=color, alpha=a, label=label)
-        for i, word in enumerate(words):
-            plt.annotate(word, alpha=0.5, xy=(x[i], y[i]), xytext=(5, 2),
-                         textcoords='offset points', ha='right', va='bottom', size=8)
-    plt.legend(loc=4)
-    plt.title(title)
-    plt.grid(True)
-    if filename:
-        plt.savefig(filename, format='png', dpi=150, bbox_inches='tight')
     #plt.show()
 
     #list list_protein
@@ -128,7 +106,7 @@ def my_form_post():
         for item in sublist:
             flat_list.append(item)
 
-    file = open('static/lista_bialek_bez1.txt', "r")
+    file = open('C:\\Users\\UMB\\Desktop\\flaskapp\\static\\lista_bialek_bez1.txt', "r")
     wprowadzony_tekst = file.read()
 
     wt = wprowadzony_tekst.split(',')
@@ -177,7 +155,7 @@ def my_form_post():
     from sklearn.datasets import make_classification
 
     import pickle
-    rnd = pickle.load(open('/home/piotr/Pobrane/flaskapp/static/finalized_model.sav', 'rb'))
+    rnd = pickle.load(open('C:\\Users\\UMB\\Desktop\\flaskapp\\static\\finalized_model_32.sav', 'rb'))
 
     a = query(tablica_in)
     d = []
@@ -210,6 +188,29 @@ def my_form_post():
 
     df_abstract_1 = df_abstract_1[['abstracts', 'class']]
     #result3 = str(result2)
+    import matplotlib.pyplot as plt
+
+    import matplotlib.cm as cm
+    keys = tablica_in
+    title = "Most similar for you request"
+    labels = keys
+    a=0.7
+    filename = 'C:\\Users\\UMB\\Desktop\\flaskapp\\static\\output.png'
+
+    plt.figure(figsize=(16, 9))
+    colors = cm.rainbow(np.linspace(0, 1, len(labels)))
+    for label, embeddings, words, color in zip(labels, embedding_clusters, word_clusters, colors):
+        x = embeddings[:, 0]
+        y = embeddings[:, 1]
+        plt.scatter(x, y, c=color, alpha=a, label=label)
+        for i, word in enumerate(words):
+            plt.annotate(word, alpha=0.5, xy=(x[i], y[i]), xytext=(5, 2),
+                         textcoords='offset points', ha='right', va='bottom', size=8)
+    plt.legend(loc=4)
+    plt.title(title)
+    plt.grid(True)
+    if filename:
+        plt.savefig(filename, format='png', dpi=150, bbox_inches='tight')
     return render_template('index22.html', len_df = len_df,
                             lista_abstract=[df_abstract_1.to_html(classes='data')],
                             text=text, titles=df_abstract_1.columns.values,
