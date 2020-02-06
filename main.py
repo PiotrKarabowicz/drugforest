@@ -20,53 +20,52 @@ def page1():
 
 @app.route('/page1', methods=['POST'])
 def my_form_post():
+    #zaimportowanie zapytania z req1.html
     from pymed import PubMed
     text = request.form['text']
-    max =2000
-    #count_vect.fit(text)
+    max =2000  # ilosc zapytan
     text = [text]
+
+    #wporwadzenie zapytania do pubmed
     pubmed = PubMed(tool="MyTool", email="p.karabowicz@gmail.com")
     results1 = pubmed.query(text, max_results=max)
 
+    #przeksztalcenie wynikow zapytania na data frame
     lista_abstract_3=[]
-
     for i in results1:
         lista_abstract_3.append(i.abstract)
     import pandas as pd
     df_abstract = pd.DataFrame(lista_abstract_3, columns = ['abstracts'])
     df_abstract['abstracts_lower'] = df_abstract['abstracts'].str.lower()
+    df_abstract_1 = df_abstract.dropna() #datafraame wynikow do analizy
 
-    df_abstract_1 = df_abstract.dropna()
+    #predykcja
     import pickle
     rnd = pickle.load(open('/home/piotr/projekt2/drugforest/static/finalized_model.sav', 'rb'))
     from sklearn.feature_extraction.text import CountVectorizer
     count_vect = CountVectorizer(analyzer='word', token_pattern=r'\w{1,}', max_features=100)
     result1=count_vect.fit_transform(df_abstract_1['abstracts_lower'])
     result2 = rnd.predict(result1)
-
-    df_abstract_1['class'] = result2
-
+    df_abstract_1['class'] = result2 # dataframe z wynikami
     len_df = len(result2)
+
 #unsupervised learning
     from gensim.models import Word2Vec
     from nltk.corpus import stopwords
-
+    #przygotowanie tekstu do osadzania slow
     stop = stopwords.words('english')
-
     df_abstract_1['abstracts_stop'] = df_abstract_1['abstracts_lower'].apply(lambda x: ' '.join([word for word in x.split() if word not in (stop)]))
     df_abstract_1['tokenized'] = df_abstract_1.apply(lambda row: nltk.word_tokenize(row['abstracts_lower']), axis=1)
     model_ted1 = Word2Vec(sentences=df_abstract_1['tokenized'], size=200, window=10, min_count=1, workers=4, sg=0)
 
-    #plt.show()
-
-    #list list_protein
+    #ekstrackja slow najbardziej podobnych do protein i target
     keys = ['protein', 'target']
     most_sim = model_ted1.wv.most_similar(positive = keys, topn=1000)
-
+    #utworzenie tablicy ze slownika
     most_sim_key = []
     for w, n in most_sim:
         most_sim_key.append(w)
-
+    #tagowanie tekstu i filtrowanie wedlug tagow
     post_tag_list = nltk.pos_tag(most_sim_key)
 
     listNN = []
@@ -85,7 +84,7 @@ def my_form_post():
     for sublist in lista:
         for item in sublist:
             flat_list.append(item)
-
+    #filtrowanie wzgledem bazy bialek
     file = open('/home/piotr/projekt2/drugforest/static/lista_bialek_bez1.txt', "r")
     wprowadzony_tekst = file.read()
 
@@ -99,19 +98,16 @@ def my_form_post():
         wt2.append(w)
 
     wt2 = [x.lower() for x in wt2 ]
-
-    tablica_in =[]
+    tablica_in =[] #lista wyekstrahowanych bialek
     for w in flat_list:
         if w in wt2:
             tablica_in.append(w)
 
-    # percent true
+    # predykcja dla zapytan z tablica_in
     import sklearn
     from sklearn.feature_extraction.text import CountVectorizer
-    from pymed import PubMed
     import time
 
-    #count_vect = CountVectorizer(analyzer='word', token_pattern=r'\w{1,}', max_features=100)
     def query(list_target):
         pubmed = PubMed(tool="MyTool", email="p.karabowicz@gmail.com")
         lista=[]
@@ -123,7 +119,6 @@ def my_form_post():
     def lista_bastract_pred1(lista):
         lista_abstract_pred=[]
         for n in lista:
-        #for k in n:
                 lista_abstract_pred.append(n.abstract)
         return lista_abstract_pred
 
@@ -167,9 +162,8 @@ def my_form_post():
     df_list = df_list.reset_index()
 
     df_abstract_1 = df_abstract_1[['abstracts', 'class']]
-    #result3 = str(result2)
 
-    #plot
+#plot
     embedding_clusters = []
     word_clusters = []
     embeddings = []
@@ -212,6 +206,49 @@ def my_form_post():
     plt.grid(True)
     if filename:
         plt.savefig(filename, format='png', dpi=150, bbox_inches='tight')
+
+#binding study:)
+    list_query_prot=[]
+    for w in tablica_in:
+        query3 = "(2002:2017[dp])"+ ' AND '+ w
+        list_query_prot.append(query3)
+    for w in list_query_prot:
+        w.replace("'", "")
+    lista_prot = []
+    for k in list_query_prot:
+        time.sleep(1)
+        lista_prot.append(pubmed.query(k, max_results=300))
+    lista_abstract_prot=[]
+    for w in lista_prot:
+        for k in w:
+            lista_abstract_prot.append(k.abstract)
+
+    df_abstract_prot = pd.DataFrame(lista_abstract_prot, columns = ['abstracts'])
+    df_abstract_prot['abstracts_lower'] = df_abstract_prot['abstracts'].str.lower()
+    df_abstract_prot = df_abstract_prot.dropna()
+    stop = stopwords.words('english')
+    df_abstract_prot['abstracts_stop'] = df_abstract_prot['abstracts_lower'].apply(lambda x: ' '.join([word for word in x.split() if word not in (stop)]))
+    df_abstract_prot['tokenized'] = df_abstract_prot.apply(lambda row: nltk.word_tokenize(row['abstracts_stop']), axis=1)
+
+    #model na tablica_in
+    EMB_DIM = 300
+    from gensim.models import Word2Vec
+    model_ted_prot = Word2Vec(sentences=df_abstract_prot['tokenized'], size=EMB_DIM, window=20, min_count=1, workers=4, sg=1)
+
+    lll = []
+    l1 = []
+    db = []
+    for w in tablica_in:
+        if w in model_ted_prot.wv.vocab:
+            a = model_ted_prot.wv.most_similar(positive = [w,'ligand'], topn=20)
+            lll.append(a)
+            l1.append(w)
+        else:
+            db.append(w)
+
+    pd.options.display.max_colwidth = 1000
+    df_ligand = pd.DataFrame(list(zip(lll, l1)), columns = ['ligands', 'protein']) #dataframe ligand
+#template
     return render_template('index22.html', len_df = len_df,
                             lista_abstract=[df_abstract_1.to_html(classes='data')],
                             text=text, titles=df_abstract_1.columns.values,
