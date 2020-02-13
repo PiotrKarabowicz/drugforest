@@ -10,15 +10,15 @@ nltk.download('averaged_perceptron_tagger')
 app = Flask(__name__)
 
 
-@app.route('/')
-def my_form():
-    return render_template('url.html')
+#@app.route('/')
+#def my_form():
+#    return render_template('url.html')
 
-@app.route('/page1')
+@app.route('/')
 def page1():
     return render_template('req1.html')
 
-@app.route('/page1', methods=['POST'])
+@app.route('/', methods=['POST'])
 def my_form_post():
     #zaimportowanie zapytania z req1.html
     from pymed import PubMed
@@ -240,7 +240,7 @@ def my_form_post():
     db = []
     for w in tablica_in:
         if w in model_ted_prot.wv.vocab:
-            a = model_ted_prot.wv.most_similar(positive = [w,'ligand'], topn=20)
+            a = model_ted_prot.wv.most_similar(positive = [w,'inhibitor'], topn=20)
             lll.append(a)
             l1.append(w)
         else:
@@ -253,7 +253,8 @@ def my_form_post():
                             lista_abstract=[df_abstract_1.to_html(classes='data')],
                             text=text, titles=df_abstract_1.columns.values,
                             df_list = [df_list.to_html(classes='data')],
-                            titles1=df_list.columns.values)
+                            titles1=df_list.columns.values,
+                            df_ligand = [df_ligand.to_html(classes='data')])
 
 if __name__ == '__main__':
     app.run(host='127.0.0.1', port=8080, debug=True)

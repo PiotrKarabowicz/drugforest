@@ -11,15 +11,15 @@
   <hr>
 
 
-  <h3> List of extracted proteins </h3>
-  {% for table in tablica_in %}
+  <h3> Table with proteins and scoring</h3>
+  {% for table in df_ligand %}
           <br>
           {{titles[loop.index]}}
           {{ table|safe }}
   {% endfor %}
   <hr>
-  <h3> Clasters for "extracted proteins"</h3>
-  <img src="{{url_for('static', filename='output1.png')}}" />
+  <!--<h3> Clasters for "extracted proteins"</h3>
+  <img src="{{url_for('static', filename='output1.png')}}" />-->
   <hr>
   <h3> percent true </h3>
   {% for table in df_list %}
@@ -28,8 +28,8 @@
   {% endfor %}
   <hr>
   <h3> Abstracts </h3>
-  <p> AIPharm engine extracted {{len_df}} abstracts</p><br>
-  <P> that can be connected with drug target </p>
+  <p> AIPharm engine found {{len_df}} abstracts</p><br>
+  <P> that can be linked with drug target </p>
     {% for table in lista_abstract %}
             {{titles[loop.index]}}
             {{ table|safe }}
